@@ -1,9 +1,8 @@
-## Readme
+#  Readme
 
-EstimationNFP.m evaluates the estimates using both MPEC and NFP. Code is being developed to exhibit the compuation time and 
-statistical properties of the fixed point map.
+EstimationNFP.m evaluates the estimates using both MPEC and NFP. Captures the Bias and the Standard Errors with respect to the true parameter of the DGP. Code is being developed to exhibit the compuation time. 
 
-# Subroutines
+## Subroutines
 
 
 makeIndex.m computes the linear systematic part of random utilities allowing for several types of interaction effects.

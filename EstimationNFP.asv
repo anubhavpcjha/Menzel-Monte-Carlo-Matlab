@@ -5,15 +5,15 @@ options = optimset('Algorithm','sqp');
 rand('seed',1234);
 %rand('seed',5678);
 B = 20;
-N=unigrid(100,100,200);
+N=[100;200;500;1000;2000];
 thNFP=ones(8,B,length(N));
 thMPEC=ones(8,B,length(N));
 timeNFP=ones(B,length(N));
 timeMPEC=ones(B,length(N));
 i=1;
 for n = N
-    
-    for b = 1:B
+    b=1;
+    while b<B+1
         % first regressor is constant, second is group indicator
         n2 = n/2;
         X = repmat([1 0;1 1],n2,1);
@@ -73,10 +73,10 @@ for n = N
         b_res = zeros(2*k+4,1);
         
         
-        tic
+        r=cputime;        
         options = optimset('Algorithm','active-set','MaxIter',200);
-        [th_hat,fval,exitflag] = fmincon(loglik,theta_0,[],[],A_res,b_res,[],[],[],options);
-        toc
+        [th_hat,~,~] = fmincon(loglik,theta_0,[],[],A_res,b_res,[],[],[],options);
+        timeNFP(b,i)=cputime-r;
         
         thNFP(:,b,i)=th_hat(1:8,1);
         
@@ -93,13 +93,15 @@ for n = N
         loglik0 = @(theta)loglik2(theta,mu,X,Z);
         psi_diff = @(theta)psi_fp1(theta,X,Z);
         
-        tic
+        t=cputime;
         options = optimset('Algorithm','active-set','MaxIter',200);
-        [th_hat,fval,exitflag] = fmincon(loglik0,theta_0,A_ineq,b_res,A_res,b_res,[],[],psi_diff,options);
-        toc
+        [th_hat,~,~] = fmincon(loglik0,theta_0,A_ineq,b_res,A_res,b_res,[],[],psi_diff,options);
+        timeMPEC(b,i)=cputime-t;
         
-        thMPEC(:,b,i)=th_hat(1:8,1);
-        
+        if norm(th_hat(1:8,1))<50
+            thMPEC(:,b,i)=th_hat(1:8,1);
+            b=b+1;
+        end
        
      
         
@@ -116,6 +118,9 @@ end
     nfp=mean(thNFP,2);
     mpec=mean(thMPEC,2);
     
+    meantimeNFP=mean(timeNFP,1);
+    meantimeMPEC=mean(timeMPEC,1);
+   
     nfpresid=thNFP-repmat(beta_w,1,B,length(N));
     mpecresid=thMPEC-repmat(beta_w,1,B,length(N));
     
